@@ -81,21 +81,53 @@ namespace ACE
                 cv2.destroyAllWindows()
                 */
             }
-            
+            /*
             String win1 = "Test Window";
-            var img = CvInvoke.Imread(PATH,
-                                ImreadModes.Grayscale);
+            var img = CvInvoke.Imread(PATH, ImreadModes.Grayscale);
             CvInvoke.NamedWindow(win1);
             CvInvoke.Imshow(win1, img);
             CvInvoke.WaitKey(0);
             CvInvoke.DestroyWindow(win1);
-
-            //ACEMethod.Run(PATH);
+            
             Console.WriteLine(img.GetType());
-            var img2 = (byte[,])img.GetData();       // I WILL BE USING THIS!!!!!!
-            Console.WriteLine(img2.GetType());
-            img.SetTo<byte[]>(img2);
+            var img2 = (byte[,])img.GetData();       // I WILL BE USING THIS!!
+            //Console.WriteLine(img2.GetType());
+            */
+
+            /*
+             нужно ппереписать метод ACE так, чтобы он получал объект Mat,
+             а не путь к изображению, чтобы можно было потом добавлять
+             методы, которые будут вызываться до или после ACE
+            */
+
+            System.Diagnostics.Stopwatch stopWatch = new();
+            stopWatch.Start();
+            ACEMethod.Run(PATH);      //I guess now it will need img2 OR img
+            stopWatch.Stop();
+            TimeSpan ts = stopWatch.Elapsed;
+
+            // Format and display the TimeSpan value.
+            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                ts.Hours, ts.Minutes, ts.Seconds,
+                ts.Milliseconds / 10);
+            Console.WriteLine("RunTime " + elapsedTime);
+            /*
+            //===========from byte[][] to byte[]===========
+            byte[] tmp = new byte[img.Rows * img.Cols];
+            int k = 0;
+            for (int i = 0; i < img.Rows; i++)
+            {
+                for (int j = 0; j < img.Cols; j++)
+                {
+                    tmp[k] = img2[i, j];
+                    k++;
+                }
+            }
+            img.SetTo<byte>(tmp);
+            //=============================================
             CvInvoke.Imshow(win1, img);
+            CvInvoke.WaitKey(0);
+            */
             CvInvoke.DestroyAllWindows();
         }
     }

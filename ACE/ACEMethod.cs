@@ -24,76 +24,106 @@ namespace ACE
         public static void Run(string PATH)
         {
             var img2 = CvInvoke.Imread(PATH, ImreadModes.Grayscale);
-            var img = img2.GetData();
+            var img = (byte[,])img2.GetData();
             s_subsetSize = (img.GetLength(0) > img.GetLength(1) ?
                         img.GetLength(0) : img.GetLength(1));
 
             //------------first step: count Rc for the whole image------------
             // array for r(*) values of subset
-            var r_arr = new float[s_subsetSize, s_subsetSize];
+            var rArr = new float[s_subsetSize, s_subsetSize];
 
-            var new_img = new float[img.GetLength(0), img.GetLength(1)];
-            float min_R = 0.0F;
-            float max_R = 0.0F;
-            /*
-            for i in range(0, img.shape[0]):
-                for j in range(0, img.shape[1]):
-                    r_max = count_subset(r_arr, img, i, j)
-                    new_img[i][j] = func_R(r_arr, r_max)
-                    if i == 0 and j== 0:
-                        min_R = new_img[i][j]
-                    if min_R > new_img[i][j]:
-                        min_R = new_img[i][j]
-                    if max_R < new_img[i][j]:
-                        max_R = new_img[i][j]
+            var newImg = new float[img.GetLength(0), img.GetLength(1)];
+            float minR = 0.0F;
+            float maxR = 0.0F;
+
+            for (int i = 0; i < img.GetLength(0); i++)
+            {
+                for (int j = 0; j < img.GetLength(1); j++)
+                {
+                    var rMax = s_countSubset(rArr, img, i, j);
+                    newImg[i, j] = s_funcR(rArr, rMax);
+                    if (i == 0 && j == 0)
+                        minR = newImg[i, j];
+                    if (minR > newImg[i, j])
+                        minR = newImg[i, j];
+                    if (maxR < newImg[i, j])
+                        maxR = newImg[i, j];
+                }
+            }
             /*
                 after the first step we get an array of
                 float values that will be scaled
                 from 0 to 255 in the second step
-            
+            */
+
             //----------------second step: count Oc for all Rc----------------
             // Oc = round[ slope_O*(Rc(p) - min_R) ]
-            res_img = np.zeros(img.shape, np.uint8)
+            var resImg = new byte[img.GetLength(0), img.GetLength(1)];
 
             //print(new_img[0][98], new_img[255][255], new_img[600][1000])                   #DEBUG
 
-            float slope_O = 255.0F / (max_R - min_R);
-            for i in range(0, new_img.shape[0]):
-                for j in range(0, new_img.shape[1]):
-                    #round in python: int(A + (0.5 if A > 0 else -0.5))
-                    tmp = slope_O * (new_img[i][j] - min_R)
-                    res = int(tmp + (0.5 if tmp > 0 else -0.5))
-                    res_img[i][j] = res
-                    if res < 0:
-                        print(".....how?")
+            float slopeO = 255.0F / (maxR - minR);
+            for (int i = 0; i < newImg.GetLength(0); i++)
+            {
+                for (int j = 0; j < newImg.GetLength(1); j++)
+                {
+                    // round in python: int(A + (0.5 if A > 0 else -0.5))
+                    var tmp = slopeO * (newImg[i, j] - minR);
+                    if (tmp > 0)
+                        tmp += 0.5F;
+                    else
+                        tmp -= 0.5F;
+                    var res = (int)tmp;
+                    resImg[i, j] = (byte)res;
+                    if (res < 0)
+                        Console.WriteLine(".....how?");
+                }
+            }
 
             //print(res_img[0][98], res_img[255][255], res_img[600][1000])                   #DEBUG
             //----------------------------------------------------------------
-            //print(img.shape)
-            //print(min_R, max_R)
-            Console.WriteLine(slope_O);
+            Console.WriteLine(slopeO);
 
-            //print("--- %s seconds ---" % (time.time() - start_time))
+            //=====================THIS NEEDS TO BE FIXED=====================
+            byte[] tmpArr = new byte[img.GetLength(0) * img.GetLength(1)];
+            int k = 0;
+            for (int i = 0; i < img.GetLength(0); i++)
+            {
+                for (int j = 0; j < img.GetLength(1); j++)
+                {
+                    tmpArr[k] = img[i, j];
+                    k++;
+                }
+            }
+            var imgNew = img2.Clone();
+            imgNew.SetTo<byte>(tmpArr);
+            tmpArr = new byte[resImg.GetLength(0) * resImg.GetLength(1)];
+            k = 0;
+            for (int i = 0; i < resImg.GetLength(0); i++)
+            {
+                for (int j = 0; j < resImg.GetLength(1); j++)
+                {
+                    tmpArr[k] = resImg[i, j];
+                    k++;
+                }
+            }
+            var resImgNew = img2.Clone();
+            resImgNew.SetTo<byte>(tmpArr);
+            //================================================================
 
-            CvInvoke.Imshow(_nameFirst, img);
-            cv2.waitKey(0)
-            //cv2.destroyWindow(name_first)
-            cv2.imshow(name_second, res_img)
-            cv2.waitKey(0)
-            cv2.imwrite("Oc.jpg", res_img)
+            CvInvoke.Imshow(_nameFirst, imgNew);
+            CvInvoke.WaitKey(0);
+            //CvInvoke.DestroyWindow(_nameFirst);
+            CvInvoke.Imshow(_nameSecond, resImgNew);
+            CvInvoke.WaitKey(0);
+            //CvInvoke.Imwrite("Oc.jpg", resImg);
             //cv2.destroyWindow(name_second)
 
-            cv2.destroyAllWindows()
-            */
+            CvInvoke.DestroyAllWindows();
             //----------------------------------------------------------------
-            String win1 = "Test Window";
             //var img = CvInvoke.Imread(PATH, ImreadModes.Grayscale);
             //s_subsetSize = (img.Cols > img.Rows? img.Cols : img.Rows);
-            Console.WriteLine(s_subsetSize);
-            CvInvoke.NamedWindow(win1);
-            CvInvoke.Imshow(win1, img2);
-            CvInvoke.WaitKey(0);
-            CvInvoke.DestroyWindow(win1);
+
         }
 
         //============================FUNCTIONS===============================
