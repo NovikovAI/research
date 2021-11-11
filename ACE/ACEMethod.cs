@@ -23,6 +23,10 @@ namespace ACE
         //==============================MAIN==================================
         public static void Run(string PATH)
         {
+            // stopwatch to time the method
+            System.Diagnostics.Stopwatch stopWatch = new();
+            stopWatch.Start();
+
             var img2 = CvInvoke.Imread(PATH, ImreadModes.Grayscale);
             var img = (byte[,])img2.GetData();
             s_subsetSize = (img.GetLength(0) > img.GetLength(1) ?
@@ -60,8 +64,6 @@ namespace ACE
             // Oc = round[ slope_O*(Rc(p) - min_R) ]
             var resImg = new byte[img.GetLength(0), img.GetLength(1)];
 
-            //print(new_img[0][98], new_img[255][255], new_img[600][1000])                   #DEBUG
-
             float slopeO = 255.0F / (maxR - minR);
             for (int i = 0; i < newImg.GetLength(0); i++)
             {
@@ -79,8 +81,6 @@ namespace ACE
                         Console.WriteLine(".....how?");
                 }
             }
-
-            //print(res_img[0][98], res_img[255][255], res_img[600][1000])                   #DEBUG
             //----------------------------------------------------------------
             Console.WriteLine(slopeO);
 
@@ -111,7 +111,15 @@ namespace ACE
             resImgNew.SetTo<byte>(tmpArr);
             //================================================================
 
-            CvInvoke.Imshow(_nameFirst, imgNew);
+            stopWatch.Stop();
+            TimeSpan ts = stopWatch.Elapsed;
+            // Format and display the TimeSpan value.
+            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                ts.Hours, ts.Minutes, ts.Seconds,
+                ts.Milliseconds / 10);
+            Console.WriteLine("ACE RunTime - " + elapsedTime);
+
+            CvInvoke.Imshow(_nameFirst, imgNew);    //imgNew is redundant!!!
             CvInvoke.WaitKey(0);
             //CvInvoke.DestroyWindow(_nameFirst);
             CvInvoke.Imshow(_nameSecond, resImgNew);
@@ -122,8 +130,7 @@ namespace ACE
             CvInvoke.DestroyAllWindows();
             //----------------------------------------------------------------
             //var img = CvInvoke.Imread(PATH, ImreadModes.Grayscale);
-            //s_subsetSize = (img.Cols > img.Rows? img.Cols : img.Rows);
-
+            //s_subsetSize = (img.Cols > img.Rows ? img.Cols : img.Rows);
         }
 
         //============================FUNCTIONS===============================
