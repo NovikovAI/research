@@ -13,7 +13,7 @@ namespace ACE
         {
             string PATH = Directory.GetCurrentDirectory();
             PATH += "//..//..//..//";
-            PATH += "..//images//test.jpg";
+            var imgPath = PATH + "..//images//test.jpg";
             //============================MAIN================================
             /*
             String win1 = "Test Window";
@@ -31,7 +31,7 @@ namespace ACE
             // I think I should change the input to img itself
             // and add an option whether to save an image 
             // and under what name
-            ACEMethod.Run(PATH);
+            ACEMethod.Run(imgPath);
 
             CvInvoke.DestroyAllWindows();
         }

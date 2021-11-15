@@ -124,7 +124,7 @@ namespace ACE
             //CvInvoke.DestroyWindow(_nameFirst);
             CvInvoke.Imshow(_nameSecond, resImgNew);
             CvInvoke.WaitKey(0);
-            //CvInvoke.Imwrite("Oc.jpg", resImg);
+            //CvInvoke.Imwrite("Oc.jpg", resImgNew);
             //cv2.destroyWindow(name_second)
 
             CvInvoke.DestroyAllWindows();
