@@ -21,20 +21,29 @@ namespace ACE
         private const string _nameFirst = "Original image";
         private const string _nameSecond = "Oc";
         //==============================MAIN==================================
-        public static void Run(string PATH)
+        public static Mat s_run(Mat img2, string saveName = "")
         {
             // stopwatch to time the method
             System.Diagnostics.Stopwatch stopWatch = new();
             stopWatch.Start();
 
-            var img2 = CvInvoke.Imread(PATH, ImreadModes.Grayscale);
             var img = (byte[,])img2.GetData();
+            //!!!!!!!!!!!!!!!!!!!!!I NEED TO CHANGE THIS!!!!!!!!!!!!!!!!!!!!!!
+
+            /*
+               because of extra values the resulting value is incorrect
+               also s_countSubset is based on s_subsetSize and that is wrong
+               and instead of using img[0,0,0] I need to be using img.GetValue(0,0,0)
+               so that it can be unified for all types of images
+            */
+
             s_subsetSize = (img.GetLength(0) > img.GetLength(1) ?
                         img.GetLength(0) : img.GetLength(1));
 
             //------------first step: count Rc for the whole image------------
             // array for r(*) values of subset
             var rArr = new float[s_subsetSize, s_subsetSize];
+            //!!!!!!!!!!!!!!!!!!!!!I NEED TO CHANGE THIS!!!!!!!!!!!!!!!!!!!!!!
 
             var newImg = new float[img.GetLength(0), img.GetLength(1)];
             float minR = 0.0F;
@@ -84,32 +93,8 @@ namespace ACE
             //----------------------------------------------------------------
             Console.WriteLine(slopeO);
 
-            //=====================THIS NEEDS TO BE FIXED=====================
-            byte[] tmpArr = new byte[img.GetLength(0) * img.GetLength(1)];
-            int k = 0;
-            for (int i = 0; i < img.GetLength(0); i++)
-            {
-                for (int j = 0; j < img.GetLength(1); j++)
-                {
-                    tmpArr[k] = img[i, j];
-                    k++;
-                }
-            }
-            var imgNew = img2.Clone();
-            imgNew.SetTo<byte>(tmpArr);
-            tmpArr = new byte[resImg.GetLength(0) * resImg.GetLength(1)];
-            k = 0;
-            for (int i = 0; i < resImg.GetLength(0); i++)
-            {
-                for (int j = 0; j < resImg.GetLength(1); j++)
-                {
-                    tmpArr[k] = resImg[i, j];
-                    k++;
-                }
-            }
-            var resImgNew = img2.Clone();
-            resImgNew.SetTo<byte>(tmpArr);
-            //================================================================
+            var imgNew = s_matSetTo(img2, img);
+            var resImgNew = s_matSetTo(img2, resImg);
 
             stopWatch.Stop();
             TimeSpan ts = stopWatch.Elapsed;
@@ -119,20 +104,17 @@ namespace ACE
                 ts.Milliseconds / 10);
             Console.WriteLine("ACE RunTime - " + elapsedTime);
 
-            CvInvoke.Imshow(_nameFirst, imgNew);    //imgNew is redundant!!!
+            CvInvoke.Imshow(_nameFirst, imgNew);
             CvInvoke.WaitKey(0);
-            //CvInvoke.DestroyWindow(_nameFirst);
             CvInvoke.Imshow(_nameSecond, resImgNew);
             CvInvoke.WaitKey(0);
-            //CvInvoke.Imwrite("Oc.jpg", resImgNew);
-            //cv2.destroyWindow(name_second)
+            if (saveName != "")
+                CvInvoke.Imwrite(saveName, resImgNew);
 
             CvInvoke.DestroyAllWindows();
-            //----------------------------------------------------------------
-            //var img = CvInvoke.Imread(PATH, ImreadModes.Grayscale);
-            //s_subsetSize = (img.Cols > img.Rows ? img.Cols : img.Rows);
-        }
 
+            return resImgNew;
+        }
         //============================FUNCTIONS===============================
         // r(*) is a Saturation function
         /*
@@ -231,6 +213,25 @@ namespace ACE
             if (denom != 0)
                 ans = numer / denom;
             return ans;
+        }
+
+        public static Mat s_matSetTo(Mat mat, byte[,] arr)
+        {
+            byte[] tmpArr = new byte[arr.GetLength(0) * arr.GetLength(1)];
+            int k = 0;
+            for (int i = 0; i < arr.GetLength(0); i++)
+            {
+                for (int j = 0; j < arr.GetLength(1); j++)
+                {
+                    tmpArr[k] = arr[i, j];
+                    k++;
+                }
+            }
+
+            Mat res = mat.Clone();
+            res.SetTo<byte>(tmpArr);
+
+            return res;
         }
     }
 }

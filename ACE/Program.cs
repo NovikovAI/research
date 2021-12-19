@@ -13,7 +13,8 @@ namespace ACE
         {
             string PATH = Directory.GetCurrentDirectory();
             PATH += "//..//..//..//";
-            var imgPath = PATH + "..//images//test.jpg";
+            var imgPath = PATH + "..//images//parrot.png";
+            string imgSaveName = "";        //if it's empty it won't save
             //============================MAIN================================
             /*
             String win1 = "Test Window";
@@ -28,10 +29,24 @@ namespace ACE
             //Console.WriteLine(img2.GetType());
             */
 
-            // I think I should change the input to img itself
-            // and add an option whether to save an image 
-            // and under what name
-            ACEMethod.Run(imgPath);
+            var img = CvInvoke.Imread(imgPath, ImreadModes.Unchanged);
+
+            var tmp = img.GetData();
+            //int i = tmp.GetLength(0);
+            //int j = tmp.GetLength(1);
+            //int k = tmp.GetLength(2);
+            Type byte2 = typeof(Byte[,]);
+            Type byte3 = typeof(Byte[,,]);
+
+            Console.WriteLine(tmp.GetType().Equals(byte3));
+            /*
+               now based on this I can make a unified method for
+               all types of images
+               also using the tmp.GetLength(2) method to
+               get number of channels
+            */
+
+            //var resImg = ACEMethod.s_run(img, imgSaveName);
 
             CvInvoke.DestroyAllWindows();
         }
